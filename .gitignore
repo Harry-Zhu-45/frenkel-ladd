@@ -4,6 +4,10 @@
 # cmake
 build
 
+# python
+
+venv
+
 # Prerequisites
 *.d
 
