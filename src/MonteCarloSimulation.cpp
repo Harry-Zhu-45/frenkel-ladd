@@ -61,110 +61,58 @@ double MonteCarloSimulation::calculateTotalEnergy()
 
 void MonteCarloSimulation::metropolisStep()
 {
-    double energyBefore = calculateTotalEnergy(); // 变化前的势能
-
     // 创建随机数生成器对象
     std::random_device rd;                                             // 用于种子生成
     std::mt19937 gen(rd());                                            // Mersenne Twister 伪随机数生成器
     std::uniform_real_distribution<double> randomDouble(0.0, 1.0);     // 生成(0, 1)之间的均匀分布随机数
     std::uniform_int_distribution<int> randomInt(0, numParticles - 1); // 生成(0, 1)之间的均匀分布随机数
 
-    int randomIndex = randomInt(gen);                    // 随机选取一个粒子
-    Particle &selectedParticle = particles[randomIndex]; // 引用，方便修改
-
-    // 对选中的粒子进行随机位移
+    int randomIndex = randomInt(gen);                                                                 // 随机选取一个粒子
     Vector3D displacement(randomDouble(gen) - 0.5, randomDouble(gen) - 0.5, randomDouble(gen) - 0.5); // 产生随机位移
-    displacement = displacement * 0.1;                                                                // 调整位移幅度
-    selectedParticle.position = selectedParticle.position + displacement;                             // 位移
+    displacement = displacement * 0.05;                                                               // 调整位移幅度
+    Vector3D virtualDisplacement = particles[randomIndex].position + displacement;                    // 虚拟位移
 
-    // 判断是否重叠
-    // 同时判断选中粒子 x y z 正负方向虚拟位移一个晶胞距离后是否有重叠
-    // 一共判断 7 次
-    for (int i = 0; i < numParticles && i != randomIndex; ++i) // 遍历除选中粒子外的所有粒子
-    {
-        Vector3D delta = particles[i].position - particles[randomIndex].position; // 两粒子间的位移
-        double distance = delta.magnitude();                                      // 两粒子间的距离
-        if (distance < 2 * particleRadius)
-        {
-            // 重叠：拒绝位移，回退到原位置
-            selectedParticle.position = selectedParticle.position - displacement;
-            return; // 结束当前的 metropolisStep
-        }
-
-        delta = particles[i].position - particles[randomIndex].position + Vector3D(2 * latticeConstant, 0.0, 0.0); // 两粒子间的位移 （x 正方向）
-        distance = delta.magnitude();                                                                              // 两粒子间的距离
-        if (distance < 2 * particleRadius)
-        {
-            // 重叠：拒绝位移，回退到原位置
-            selectedParticle.position = selectedParticle.position - displacement;
-            return; // 结束当前的 metropolisStep
-        }
-
-        delta = particles[i].position - particles[randomIndex].position + Vector3D(-2 * latticeConstant, 0.0, 0.0); // 两粒子间的位移 （x 负方向）
-        distance = delta.magnitude();                                                                               // 两粒子间的距离
-        if (distance < 2 * particleRadius)
-        {
-            // 重叠：拒绝位移，回退到原位置
-            selectedParticle.position = selectedParticle.position - displacement;
-            return; // 结束当前的 metropolisStep
-        }
-
-        delta = particles[i].position - particles[randomIndex].position + Vector3D(0.0, 3 * latticeConstant, 0.0); // 两粒子间的位移 （y 正方向）
-        distance = delta.magnitude();                                                                              // 两粒子间的距离
-        if (distance < 2 * particleRadius)
-        {
-            // 重叠：拒绝位移，回退到原位置
-            selectedParticle.position = selectedParticle.position - displacement;
-            return; // 结束当前的 metropolisStep
-        }
-
-        delta = particles[i].position - particles[randomIndex].position + Vector3D(0.0, -3 * latticeConstant, 0.0); // 两粒子间的位移 （y 负方向）
-        distance = delta.magnitude();                                                                               // 两粒子间的距离
-        if (distance < 2 * particleRadius)
-        {
-            // 重叠：拒绝位移，回退到原位置
-            selectedParticle.position = selectedParticle.position - displacement;
-            return; // 结束当前的 metropolisStep
-        }
-
-        delta = particles[i].position - particles[randomIndex].position + Vector3D(0.0, 0.0, 3 * latticeConstant); // 两粒子间的位移 （z 正方向）
-        distance = delta.magnitude();                                                                              // 两粒子间的距离
-        if (distance < 2 * particleRadius)
-        {
-            // 重叠：拒绝位移，回退到原位置
-            selectedParticle.position = selectedParticle.position - displacement;
-            return; // 结束当前的 metropolisStep
-        }
-
-        delta = particles[i].position - particles[randomIndex].position + Vector3D(0.0, 0.0, -3 * latticeConstant); // 两粒子间的位移 （z 负方向）
-        distance = delta.magnitude();                                                                               // 两粒子间的距离
-        if (distance < 2 * particleRadius)
-        {
-            // 重叠：拒绝位移，回退到原位置
-            selectedParticle.position = selectedParticle.position - displacement;
-            return; // 结束当前的 metropolisStep
-        }
-    }
-
-    // (optional) 为了固定质心，全体粒子反向移动 displacement / numParticles
+    // 判断是否存在重叠
     for (int i = 0; i < numParticles; ++i)
     {
-        particles[i].position = particles[i].position - displacement * (1 / numParticles);
+        if (i != randomIndex) // 遍历除选中粒子外的所有粒子
+        {
+            Vector3D delta = particles[i].position - virtualDisplacement;
+            Vector3D displacement[27];
+
+            // 27 种位移，相当于周期性边界条件
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        displacement[(dx + 1) * 9 + (dy + 1) * 3 + (dz + 1)] = delta + Vector3D(dx * 2 * latticeConstant, dy * 3 * latticeConstant, dz * 3 * latticeConstant);
+                    }
+                }
+            }
+
+            for (int j = 0; j < 27; j++)
+            {
+                if (displacement[j].magnitude() < 2 * particleRadius)
+                {
+                    return; // 结束当前的 metropolisStep
+                }
+            }
+        }
     }
 
-    double energyAfter = calculateTotalEnergy(); // 变化后的势能
+    // 不重叠，计算势能变化
+    double deltaEnergy = lambda * (virtualDisplacement - lattice[randomIndex].position).magnitude() * (virtualDisplacement - lattice[randomIndex].position).magnitude() -
+                         lambda * (particles[randomIndex].position - lattice[randomIndex].position).magnitude() * (particles[randomIndex].position - lattice[randomIndex].position).magnitude();
 
-    if (randomDouble(gen) < exp((energyBefore - energyAfter) / temperature))
+    if (randomDouble(gen) < exp(-deltaEnergy / temperature)) // Metropolis 准则
     {
         // 接受位移
-    }
-    else
-    {
-        // 拒绝位移，回退到原位置
-        selectedParticle.position = selectedParticle.position - displacement;
+        particles[randomIndex].position = virtualDisplacement;
         for (int i = 0; i < numParticles; ++i)
         {
-            particles[i].position = particles[i].position + displacement * (1 / numParticles);
+            particles[i].position = particles[i].position - displacement * (1 / numParticles);
         }
     }
 }
