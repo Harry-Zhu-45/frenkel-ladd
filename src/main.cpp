@@ -6,11 +6,11 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <random>
 
 #include "myvariables.h"
 #include "Vector3D.h"
 #include "Particle.h"
-#include "randomDouble.h"
 #include "MonteCarloSimulation.h"
 
 int main(int argc, char *argv[])
@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
     inputFile.close();
     // 关闭 lattice 文件
 
-    srand(static_cast<unsigned>(time(nullptr))); // 设置随机数种子
-    numSteps = 10000 * numParticles;             // 设置默认模拟步数
-    lambda = 7.0;                                // 设置默认弹簧系数
+    // srand(static_cast<unsigned>(time(nullptr))); // 设置随机数种子
+    // numSteps = 10000 * numParticles;             // 设置默认模拟步数
+    // lambda = 7.0;                                // 设置默认弹簧系数
 
     // 命令行参数解析
     int opt;

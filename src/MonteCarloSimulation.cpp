@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <random>
 
 #include "MonteCarloSimulation.h"
-#include "randomDouble.h"
 #include "myvariables.h"
 
 int numParticles;                    // 粒子数目
@@ -63,13 +63,19 @@ void MonteCarloSimulation::metropolisStep()
 {
     double energyBefore = calculateTotalEnergy(); // 变化前的势能
 
-    int randomIndex = rand() % numParticles;             // 随机选取一个粒子
+    // 创建随机数生成器对象
+    std::random_device rd;                                             // 用于种子生成
+    std::mt19937 gen(rd());                                            // Mersenne Twister 伪随机数生成器
+    std::uniform_real_distribution<double> randomDouble(0.0, 1.0);     // 生成(0, 1)之间的均匀分布随机数
+    std::uniform_int_distribution<int> randomInt(0, numParticles - 1); // 生成(0, 1)之间的均匀分布随机数
+
+    int randomIndex = randomInt(gen);                    // 随机选取一个粒子
     Particle &selectedParticle = particles[randomIndex]; // 引用，方便修改
 
     // 对选中的粒子进行随机位移
-    Vector3D displacement(randomDouble() - 0.5, randomDouble() - 0.5, randomDouble() - 0.5); // 产生随机位移
-    displacement = displacement * 0.1;                                                       // 调整位移幅度
-    selectedParticle.position = selectedParticle.position + displacement;                    // 位移
+    Vector3D displacement(randomDouble(gen) - 0.5, randomDouble(gen) - 0.5, randomDouble(gen) - 0.5); // 产生随机位移
+    displacement = displacement * 0.1;                                                                // 调整位移幅度
+    selectedParticle.position = selectedParticle.position + displacement;                             // 位移
 
     // 判断是否重叠
     // 同时判断选中粒子 x y z 正负方向虚拟位移一个晶胞距离后是否有重叠
@@ -148,7 +154,7 @@ void MonteCarloSimulation::metropolisStep()
 
     double energyAfter = calculateTotalEnergy(); // 变化后的势能
 
-    if (randomDouble() < exp((energyBefore - energyAfter) / temperature))
+    if (randomDouble(gen) < exp((energyBefore - energyAfter) / temperature))
     {
         // 接受位移
     }
