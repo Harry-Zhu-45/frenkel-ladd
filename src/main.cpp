@@ -15,22 +15,6 @@
 
 int main(int argc, char *argv[])
 {
-    // 读取 lattice 文件
-    std::ifstream inputFile("src/lattice/" + latticeFileName);
-    if (!inputFile.is_open())
-    {
-        // 检查文件是否打开成功，如果没有打开成功，输出错误信息并退出
-        std::cerr << "Failed to open lattice.txt" << std::endl;
-        return 1;
-    }
-    inputFile >> numParticles;
-    inputFile.close();
-    // 关闭 lattice 文件
-
-    // srand(static_cast<unsigned>(time(nullptr))); // 设置随机数种子
-    // numSteps = 10000 * numParticles;             // 设置默认模拟步数
-    // lambda = 7.0;                                // 设置默认弹簧系数
-
     // 命令行参数解析
     int opt;
     while ((opt = getopt(argc, argv, "n:l:")) != -1)
@@ -51,20 +35,27 @@ int main(int argc, char *argv[])
 
     MonteCarloSimulation simulation(numParticles); // 初始化模拟
 
+    double MSD = 0;
     for (int step = 0; step < numSteps; ++step)
     {
         simulation.metropolisStep(); // 模拟
-    }
 
-    std::cout << "numParticles: " << numParticles << std::endl;                      // 输出粒子数
-    std::cout << "numSteps: " << numSteps << std::endl;                              // 输出模拟步数
-    std::cout << "lambda: " << lambda << std::endl;                                  // 输出弹簧系数
-    std::cout << "Total energy: " << simulation.calculateTotalEnergy() << std::endl; // 输出总势能
+        // 平均最后 10000 步均方位移
+        if (step >= numSteps - 10000)
+        {
+            MSD += simulation.calculateSD();
+        }
+    }
+    MSD = MSD / 10000 / numParticles;
+
+    std::cout << "numParticles: " << numParticles << std::endl; // 粒子数
+    std::cout << "numSteps: " << numSteps << std::endl;         // 模拟步数
+    std::cout << "lambda: " << lambda << std::endl;             // 弹簧系数
+    std::cout << "MSD: " << MSD << std::endl;                   // 均方位移
 
     // 储存粒子位置为 injavis 可视化软件可以加载的 `.pos` 文件
     // 如果没有就创建一个，如果有就覆盖
-    // 文件名与 lattice 文件名相同，后缀名为 .pos
-    FILE *fp = fopen((latticeFileName.substr(0, latticeFileName.find_last_of('.')) + ".pos").c_str(), "w");
+    FILE *fp = fopen("fcc-3x4x6.pos", "w");
 
     // fprintf(fp, "box %f %f %f\n", latticeConstant, latticeConstant, latticeConstant);
     fprintf(fp, "box %f %f %f\n", 2 * latticeConstant, 3 * latticeConstant, 3 * latticeConstant); // box 大小

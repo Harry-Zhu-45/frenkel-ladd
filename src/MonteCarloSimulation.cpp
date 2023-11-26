@@ -9,54 +9,58 @@
 #include "MonteCarloSimulation.h"
 #include "myvariables.h"
 
-int numParticles;                    // 粒子数目
 int numSteps = 10000 * numParticles; // 模拟步数
 double lambda = 7.0;                 // 弹簧系数
 
 MonteCarloSimulation::MonteCarloSimulation(int numParticles)
 {
-    std::ifstream inputFile("src/lattice/" + latticeFileName);
-
-    // 检查文件是否打开成功
-    if (!inputFile.is_open())
-    {
-        std::cerr << "Failed to open lattice file." << std::endl;
-        return;
-    }
-
-    // 读取 lattice 所对应的 numParticles
-    inputFile >> numParticles;
-
+    // fcc initialization
     lattice.reserve(numParticles);   // 预分配内存
     particles.reserve(numParticles); // 预分配内存
 
-    for (int i = 0; i < numParticles; ++i)
+    double a1 = latticeConstant;
+    double a0 = latticeConstant / sqrt(2.0);
+
+    int i = 0; // 一开始没有粒子
+    Vector3D centerOfMass = Vector3D(0, 0, 0);
+
+    for (int iz = 0; iz < nz; ++iz)
     {
-        double x, y, z;
-        inputFile >> x >> y >> z;
-        lattice.emplace_back(Vector3D(x, y, z) * latticeConstant);
-        particles.emplace_back(Vector3D(x, y, z) * latticeConstant);
+        for (int iy = 0; iy < ny; ++iy)
+        {
+            for (int ix = 0; ix < nx; ++ix)
+            {
+                i = i + 1;
+                lattice.emplace_back(Vector3D(a0 * ix + (a0 / 2.0) * fmod(iz, 2),
+                                              a0 * iy + (a0 / 2.0) * fmod(iz, 2),
+                                              (a1 / 2.0) * iz));
+                particles.emplace_back(Vector3D(a0 * ix + (a0 / 2.0) * fmod(iz, 2),
+                                                a0 * iy + (a0 / 2.0) * fmod(iz, 2),
+                                                (a1 / 2.0) * iz));
+
+                centerOfMass = centerOfMass + lattice[i - 1].position; // 计算质心
+            }
+        }
     }
 
-    inputFile.close();
-
-    // 整体平移，使质心为 000
+    // 固定质心于原点
+    centerOfMass = centerOfMass * (1 / numParticles);
     for (int i = 0; i < numParticles; ++i)
     {
-        lattice[i].position = lattice[i].position - Vector3D(0.75, 1.25, 1.25) * latticeConstant;
-        particles[i].position = particles[i].position - Vector3D(0.75, 1.25, 1.25) * latticeConstant;
+        lattice[i].position = lattice[i].position - centerOfMass;
+        particles[i].position = particles[i].position - centerOfMass;
     }
 }
 
-double MonteCarloSimulation::calculateTotalEnergy()
+double MonteCarloSimulation::calculateSD()
 {
-    double totalEnergy = 0.0;
+    double totalSD = 0.0;
     for (int i = 0; i < numParticles; ++i)
     {
-        // 无重叠，计算累加势能 V = lambda * (r-r0)^2
-        totalEnergy += lambda * (particles[i].position - lattice[i].position).magnitude() * (particles[i].position - lattice[i].position).magnitude();
+        // MSD = (r-r0)^2
+        totalSD += (particles[i].position - lattice[i].position).magnitude() * (particles[i].position - lattice[i].position).magnitude();
     }
-    return totalEnergy;
+    return totalSD;
 }
 
 void MonteCarloSimulation::metropolisStep()
@@ -102,9 +106,9 @@ void MonteCarloSimulation::metropolisStep()
         }
     }
 
-    // 不重叠，计算势能变化
-    double deltaEnergy = lambda * (virtualDisplacement - lattice[randomIndex].position).magnitude() * (virtualDisplacement - lattice[randomIndex].position).magnitude() -
-                         lambda * (particles[randomIndex].position - lattice[randomIndex].position).magnitude() * (particles[randomIndex].position - lattice[randomIndex].position).magnitude();
+    // 不重叠，计算可能的势能变化
+    // deltaEnergy = lambda (2 delta r_i dot delta_i + (N-1)/N delta_i^2)
+    double deltaEnergy = lambda * 2 * (particles[randomIndex].position - lattice[randomIndex].position).dot(displacement) + lambda * (numParticles - 1) / numParticles * displacement.magnitude() * displacement.magnitude();
 
     if (randomDouble(gen) < exp(-deltaEnergy / temperature)) // Metropolis 准则
     {

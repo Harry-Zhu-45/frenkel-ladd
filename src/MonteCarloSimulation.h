@@ -10,7 +10,7 @@ public:
     std::vector<Particle> particles;
     std::vector<Particle> lattice;
     MonteCarloSimulation(int numParticles);
-    double calculateTotalEnergy();
+    double calculateSD();
     void metropolisStep();
 };
 

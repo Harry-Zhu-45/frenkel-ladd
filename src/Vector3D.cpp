@@ -34,6 +34,11 @@ double Vector3D::magnitude() const
     return sqrt(x * x + y * y + z * z); // 计算向量模
 }
 
+double Vector3D::dot(const Vector3D &other) const
+{
+    return x * other.x + y * other.y + z * other.z; // 计算点积
+}
+
 Vector3D Vector3D::normalized() const
 {
     double mag = magnitude();
