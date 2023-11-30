@@ -5,7 +5,7 @@
 #include <cmath>
 
 const int nx = 3;
-const int ny = 4;
+const int ny = 3;
 const int nz = 6;
 const int numParticles = nx * ny * nz;
 

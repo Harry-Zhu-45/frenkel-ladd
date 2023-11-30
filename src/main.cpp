@@ -55,11 +55,11 @@ int main(int argc, char *argv[])
 
     // 储存粒子位置为 injavis 可视化软件可以加载的 `.pos` 文件
     // 如果没有就创建一个，如果有就覆盖
-    FILE *fp = fopen("fcc-3x4x6.pos", "w");
+    // fcc-nxxnyxnz.pos
+    FILE *fp = fopen("fcc-3x3x6.pos", "w");
 
-    // fprintf(fp, "box %f %f %f\n", latticeConstant, latticeConstant, latticeConstant);
-    fprintf(fp, "box %f %f %f\n", 2 * latticeConstant, 3 * latticeConstant, 3 * latticeConstant); // box 大小
-    fprintf(fp, "def S0 \"sphere %f \"\n", 2 * particleRadius);                                   // 定义粒子形状
+    fprintf(fp, "box %f %f %f\n", nx * latticeConstant / sqrt(2.0), ny * latticeConstant / sqrt(2.0), nz * latticeConstant / 2); // box 大小
+    fprintf(fp, "def S0 \"sphere %f \"\n", 2 * particleRadius);                                                                  // 定义粒子形状
     for (int i = 0; i < numParticles; ++i)
     {
         fprintf(fp, "S0 ffff0000 %f %f %f\n", simulation.particles[i].position.x, simulation.particles[i].position.y, simulation.particles[i].position.z); // 输出粒子位置

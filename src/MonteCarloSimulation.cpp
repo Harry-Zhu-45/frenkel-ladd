@@ -91,7 +91,7 @@ void MonteCarloSimulation::metropolisStep()
                 {
                     for (int dz = -1; dz <= 1; dz++)
                     {
-                        displacement[(dx + 1) * 9 + (dy + 1) * 3 + (dz + 1)] = delta + Vector3D(dx * 2 * latticeConstant, dy * 3 * latticeConstant, dz * 3 * latticeConstant);
+                        displacement[(dx + 1) * 9 + (dy + 1) * 3 + (dz + 1)] = delta + Vector3D(dx * nx * latticeConstant / sqrt(2.0), dy * ny * latticeConstant / sqrt(2.0), dz * nz * latticeConstant / 2);
                     }
                 }
             }
