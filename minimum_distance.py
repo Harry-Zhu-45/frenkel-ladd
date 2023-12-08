@@ -1,3 +1,5 @@
+#!./venv/bin/python
+
 """
 Author: HarryZ
 Time: 2023-11-03
@@ -6,6 +8,7 @@ Function: Calculate the minimum distance between particles in a given file.
 
 import re
 import numpy as np
+
 
 # 打开文件
 with open('fcc-3x4x6.pos', 'r', encoding='utf-8') as file:
