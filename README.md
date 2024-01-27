@@ -40,9 +40,7 @@ eof
 
 ## 编译与使用
 
-`nx, ny, nz`
-
-在根目录下使用 `cmake` 编译
+`nx, ny, nz` 等变量可以在 `src/myvariables.h` 中设置。设置好之后可以在在根目录下使用 `cmake` 编译可执行文件
 
 ```bash
 cmake -B build
@@ -58,7 +56,7 @@ cmake --build build
 ./build/main.out -l 10 -n 10000
 ```
 
-可以使用脚本 `collect.sh` 连续多次模拟，模拟的 msd 结果保存在文件 `msd_data.txt` 中。
+可以使用 `collect.sh` 连续多次模拟，模拟的 msd 结果保存在文件 `msd_data.txt` 中。
 
 msd 结果可以使用 `hist.py` 求平均。
 
