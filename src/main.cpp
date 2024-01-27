@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         switch (opt)
         {
         case 'n':
-            numSteps = std::stoi(optarg) * numParticles; // Parse the number of steps
+            numSteps = std::stoi(optarg); // Parse the number of steps
             break;
         case 'l':
             lambda = std::stod(optarg); // Parse the lambda value
@@ -40,23 +40,23 @@ int main(int argc, char *argv[])
     {
         simulation.metropolisStep(); // 模拟
 
-        // 平均最后 10000 步均方位移
-        if (step >= numSteps - 10000)
+        // 平均后半段的均方位移
+        if (step >= numSteps / 2)
         {
             MSD += simulation.calculateSD();
         }
     }
-    MSD = MSD / 10000 / numParticles;
+    MSD = MSD / (numSteps / 2) / numParticles;
 
-    std::cout << "numParticles: " << numParticles << std::endl; // 粒子数
-    std::cout << "numSteps: " << numSteps << std::endl;         // 模拟步数
-    std::cout << "lambda: " << lambda << std::endl;             // 弹簧系数
-    std::cout << "MSD: " << MSD << std::endl;                   // 均方位移
+    std::cout << "numParticles: " << numParticles << std::endl;                        // 粒子数
+    std::cout << "numSteps: " << numSteps << std::endl;                                // 模拟步数
+    std::cout << "lambda: " << lambda << std::endl;                                    // 弹簧系数
+    std::cout << "Acceptance ratio: " << simulation.getAcceptanceRatio() << std::endl; // 接受率
+    std::cout << "MSD: " << MSD << std::endl;                                          // 均方位移
 
-    // 储存粒子位置为 injavis 可视化软件可以加载的 `.pos` 文件
-    // 如果没有就创建一个，如果有就覆盖
-    // fcc-nxxnyxnz.pos
-    FILE *fp = fopen("fcc-3x3x6.pos", "w");
+    // 把粒子位置储存为 pos 文件
+    std::string posFile = "fcc-" + std::to_string(nx) + "x" + std::to_string(ny) + "x" + std::to_string(nz) + ".pos";
+    FILE *fp = fopen(posFile.c_str(), "w");
 
     fprintf(fp, "box %f %f %f\n", nx * latticeConstant / sqrt(2.0), ny * latticeConstant / sqrt(2.0), nz * latticeConstant / 2); // box 大小
     fprintf(fp, "def S0 \"sphere %f \"\n", 2 * particleRadius);                                                                  // 定义粒子形状

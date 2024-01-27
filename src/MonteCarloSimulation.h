@@ -6,10 +6,14 @@
 
 class MonteCarloSimulation
 {
+private:
+    int totalMoves;    // Total number of move attempts
+    int acceptedMoves; // Number of accepted moves
 public:
     std::vector<Particle> particles;
     std::vector<Particle> lattice;
     MonteCarloSimulation(int numParticles);
+    double getAcceptanceRatio() const;
     double calculateSD();
     void metropolisStep();
 };

@@ -1,7 +1,7 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
-#include "Vector3D.h" // 你可能需要包含 Vector3D 类的头文件
+#include "Vector3D.h"
 
 class Particle
 {

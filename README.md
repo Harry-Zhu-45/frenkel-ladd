@@ -36,9 +36,35 @@ particleType color position_x position_y position_z (quaternion_1 quaternion_2 q
 eof
 ```
 
-> 重复上述过程，可以实现动画效果
+> 重复上述过程，可以实现动画效果。
+
+## 编译与使用
+
+`nx, ny, nz`
+
+在根目录下使用 `cmake` 编译
+
+```bash
+cmake -B build
+
+cmake --build build
+```
+
+编译后的可执行文件为 `./build/main.out`
+
+可以用 `-l` 指定 `lambda`，用 `-n` 指定 MC 模拟步数。例如
+
+```bash
+./build/main.out -l 10 -n 10000
+```
+
+可以使用脚本 `collect.sh` 连续多次模拟，模拟的 msd 结果保存在文件 `msd_data.txt` 中。
+
+msd 结果可以使用 `hist.py` 求平均。
 
 ## G-L 积分
+
+可以使用 `5p-GLI.py` 或 `10p-GLI.py` 对 msd 进行 G-L 积分。
 
 ### 5-point G-L
 
@@ -64,3 +90,7 @@ eof
 |0.2190863625       | 0.6794095683      |
 |0.1494513492       | 0.8650633667      |
 |0.0666713443       | 0.9739065285      |
+
+## 其他
+
+可以使用 `minimum_distance.py` 判断两粒子之间的最近距离。
