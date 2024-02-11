@@ -1,9 +1,6 @@
 #!./venv/bin/python
 
 """
-Author: HarryZ
-Created: 2023-11-04
-Updated: 2024-01-07
 Calulate the integral of a function using 10-point Gaussian-Legendre quadrature
 """
 
@@ -39,78 +36,46 @@ weight_10 = [
 ]
 
 
-# 第一种取点
-# lambda_min = 0
-# lambda_max = 632.026
-# lambda_list_10 = [(lambda_max - lambda_min) / 2 * i +
-#                   (lambda_max + lambda_min) / 2 for i in abscissa_10]
+origin_lambda_min = 0
+origin_lambda_max = 632.026
+
+lambda_min = np.log(origin_lambda_min + np.e ** 3.5)
+lambda_max = np.log(origin_lambda_max + np.e ** 3.5)
+
+tmp = [(lambda_max - lambda_min) / 2 * i +
+       (lambda_max + lambda_min) / 2 for i in abscissa_10]
+lambda_list_10 = [np.e ** i - np.e ** 3.5 for i in tmp]
 # print(lambda_list_10)
 
 lambda_list_10 = [
-    8.245876209129506,
-    42.64173029903293,
-    101.31074409281209,
-    179.0544213242767,
-    268.966773509593,
-    363.05922649040696,
-    452.97157867572326,
-    530.7152559071878,
-    589.384269700967,
-    623.7801237908704
+    1.3218454386828071,
+    7.429242462300721,
+    20.448998156279607,
+    44.35579276774375,
+    85.59512159890338,
+    152.4321293389935,
+    251.20242463993492,
+    378.0986975526874,
+    510.1482256352902,
+    606.495129089744
 ]
 
 msd_list_10 = [
-    0.01618272,
-    0.009858267,
-    0.007049801999999999,
-    0.005353986,
-    0.004249505000000001,
-    0.0035016450000000003,
-    0.002993687,
-    0.002651689,
-    0.002436442,
-    0.002325344
+    0.0162496,
+    0.01406634,
+    0.01168701,
+    0.009454013,
+    0.007437346,
+    0.005726951,
+    0.004358547,
+    0.003346746,
+    0.0026830330000000005,
+    0.002330863
 ]
-
-
-# 第二种取点
-# lambda_min = np.log(lambda_min + np.e ** 3.5)
-# lambda_max = np.log(lambda_max + np.e ** 3.5)
-
-# tmp = [(lambda_max - lambda_min) / 2 * i +
-#                   (lambda_max + lambda_min) / 2 for i in abscissa_10]
-# lambda_list_10 = [np.e ** i - np.e ** 3.5 for i in tmp]
-# print(lambda_list_10)
-
-# lambda_list_10 = [
-#     1.3218454386828071,
-#     7.429242462300721,
-#     20.448998156279607,
-#     44.35579276774375,
-#     85.59512159890338,
-#     152.4321293389935,
-#     251.20242463993492,
-#     378.0986975526874,
-#     510.1482256352902,
-#     606.495129089744
-# ]
-
-# msd_list_10 = [
-#     0.025124979999999998,
-#     0.017622870000000002,
-#     0.01208786,
-#     0.00969303,
-#     0.007596114999999999,
-#     0.005773924,
-#     0.004415302,
-#     0.0033695780000000002,
-#     0.002710529,
-#     0.002351296
-# ]
 
 res = 0.0
 for i in range(10):
-    # print(msd_list_10[i] * (lambda_list_10[i] + np.e ** 3.5))
     res += weight_10[i] * msd_list_10[i] * (lambda_list_10[i] + np.e ** 3.5)
+res *= (lambda_max - lambda_min) / 2
 
 print(-res)
