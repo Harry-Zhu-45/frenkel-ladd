@@ -1,16 +1,48 @@
 # README
 
-## injavis 可视化
+## 基本信息
 
-打开 injavis 可视化界面:
+该仓库是对 Daan Frenkel; Anthony J. C. Ladd 的文章 [New Monte Carlo method to compute the free energy of arbitrary solids. Application to the fcc and hcp phases of hard spheres](https://pubs.aip.org/aip/jcp/article-abstract/81/7/3188/91565/New-Monte-Carlo-method-to-compute-the-free-energy) 的部分内容复现，算法细节上比较粗糙，有很大的优化空间。
+
+## 编译与使用
+
+`nx, ny, nz` 等变量可以在 `src/myvariables.h` 中设置。
+
+设置好需要模拟的参数后，在根目录下使用 `cmake` 编译
+
+```bash
+cmake -B build
+
+cmake --build build
+```
+
+编译后的可执行文件位于 `./build/main.out`
+
+可以用 `-l` 指定 `lambda`，用 `-n` 指定 Monte Carlo 模拟步数。例如：
+
+```bash
+./build/main.out -l 10 -n 10000
+```
+
+可以使用 `collect.sh` 连续多次模拟。其中 `values` 为待模拟的 `lambda` 的取值。模拟的 msd 结果将默认保存在根目录下的文件 `msd_data.txt` 中。
+
+> 需注意，重复运行脚本将会覆盖之前的结果。
+
+## G-L 积分
+
+可以使用 `5p-GLI.py` 或 `10p-GLI.py` 对所得的 msd 进行 G-L 积分。
+
+## 数据可视化 (optional)
+
+除了 msd 文件，还可以在 `src/main.cpp` 中简单修改，获得每一步 MC 模拟后的粒子位置数据。
+
+使用 injavis 进行数据的可视化操作。所需的文件可以再 [https://engellab.de/teaching/injavis](https://engellab.de/teaching/injavis) 或 [https://zenodo.org/records/4639570](https://zenodo.org/records/4639570) 获得。
 
 ```bash
 java -Xmx4096m -jar injavis.jar
 ```
 
-`.pos` 文件为 injavis 专用数据文件
-
-### pos 文件格式
+一般来说，`.pos` 文件由以下部分组成
 
 盒子可以用长宽高描述：
 
@@ -30,65 +62,14 @@ boxMatrix Lx 0 0 0 Ly 0 0 0 Lz
 particleType color position_x position_y position_z (quaternion_1 quaternion_2 quaternion_3 quaternion_4)
 ```
 
-一帧结尾为
+每一帧的结尾为
 
 ```text
 eof
 ```
 
-> 重复上述过程，可以实现动画效果。
+> 重复上述数据部分，可以记录下每一帧的粒子位置，可以在 injavis 中逐帧播放。
 
-## 编译与使用
-
-`nx, ny, nz` 等变量可以在 `src/myvariables.h` 中设置。设置好之后可以在在根目录下使用 `cmake` 编译可执行文件
-
-```bash
-cmake -B build
-
-cmake --build build
-```
-
-编译后的可执行文件为 `./build/main.out`
-
-可以用 `-l` 指定 `lambda`，用 `-n` 指定 MC 模拟步数。例如
-
-```bash
-./build/main.out -l 10 -n 10000
-```
-
-可以使用 `collect.sh` 连续多次模拟，模拟的 msd 结果保存在文件 `msd_data.txt` 中。
-
-msd 结果可以使用 `hist.py` 求平均。
-
-## G-L 积分
-
-可以使用 `5p-GLI.py` 或 `10p-GLI.py` 对 msd 进行 G-L 积分。
-
-### 5-point G-L
-
-|       weight      |      abscissa     |
-|:-----------------:|:-----------------:|
-|0.2369268850561891 |-0.9061798459386640|
-|0.4786286704993665 |-0.5384693101056831|
-|0.5688888888888889 | 0.0000000000000000|
-|0.4786286704993665 | 0.5384693101056831|
-|0.2369268850561891 | 0.9061798459386640|
-
-### 10-point G-L
-
-|       weight      |      abscissa     |
-|:-----------------:|:-----------------:|
-|0.0666713443       |-0.9739065285      |
-|0.1494513492       |-0.8650633667      |
-|0.2190863625       |-0.6794095683      |
-|0.2692667193       |-0.4333953941      |
-|0.2955242247       |-0.1488743390      |
-|0.2955242247       | 0.1488743390      |
-|0.2692667193       | 0.4333953941      |
-|0.2190863625       | 0.6794095683      |
-|0.1494513492       | 0.8650633667      |
-|0.0666713443       | 0.9739065285      |
-
-## 其他
+## 其他文件说明
 
 可以使用 `minimum_distance.py` 判断两粒子之间的最近距离。
