@@ -14,7 +14,6 @@ public:
     Vector3D operator*(double scalar) const;         // 重载运算符*
     double magnitude() const;                        // 计算向量模
     double dot(const Vector3D &other) const;         // 计算点积
-    Vector3D normalized() const;                     // 向量归一化
 };
 
 #endif

@@ -38,9 +38,3 @@ double Vector3D::dot(const Vector3D &other) const
 {
     return x * other.x + y * other.y + z * other.z; // 计算点积
 }
-
-Vector3D Vector3D::normalized() const
-{
-    double mag = magnitude();
-    return Vector3D(x / mag, y / mag, z / mag); // 归一化
-}
