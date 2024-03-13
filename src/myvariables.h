@@ -4,10 +4,18 @@
 #include <string>
 #include <cmath>
 
-const int nx = 3;
-const int ny = 3;
-const int nz = 6;
-const int numParticles = nx * ny * nz;
+const std::string boxtype = "cubic";
+// std::string boxtype = "xyz";
+
+// fcc xyz
+const int nx = 4;
+const int ny = 4;
+const int nz = 12;
+
+// fcc cubic
+const int replicate = 2;
+
+const int numParticles = (boxtype == "xyz") ? nx * ny * nz : 4 * replicate * replicate * replicate;
 
 // 粒子直径作为特征长度 sigma=1.0
 const double sigma = 1.0;
