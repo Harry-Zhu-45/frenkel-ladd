@@ -28,15 +28,13 @@ cmake --build build
 
 > 需注意，重复运行脚本将会覆盖之前的结果。
 
-## G-L 积分
-
-可以使用 `5p-GLI.py` 或 `10p-GLI.py` 对所得的 msd 进行 G-L 积分。
+可以使用 `10p-GLI.py` 对所得的 msd 进行 G-L 积分。
 
 ## 数据可视化 (optional)
 
-除了 msd 文件，还可以在 `src/main.cpp` 中简单修改，获得每一步 MC 模拟后的粒子位置数据。
+除了 msd 文件，还可以在 `src/main.cpp` 中简单修改，获得 MC 模拟后 sample 的粒子位置数据。
 
-使用 injavis 进行数据的可视化操作。所需的文件可以再 [https://engellab.de/teaching/injavis](https://engellab.de/teaching/injavis) 或 [https://zenodo.org/records/4639570](https://zenodo.org/records/4639570) 获得。
+使用 `injavis` 进行数据的可视化操作。所需的文件可以再 [https://engellab.de/teaching/injavis](https://engellab.de/teaching/injavis) 或 [https://zenodo.org/records/4639570](https://zenodo.org/records/4639570) 获得。
 
 ```bash
 java -Xmx4096m -jar injavis.jar
