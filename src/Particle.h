@@ -7,8 +7,18 @@ class Particle
 {
 public:
     Vector3D position;
-    Particle();                         // 默认构造函数的声明
-    Particle(const Vector3D &position); // 带参数的构造函数的声明
+
+    // 默认构造函数的声明
+    Particle()
+    {
+        position = Vector3D();
+    }
+
+    // 带参数的构造函数的声明
+    Particle(const Vector3D &position)
+    {
+        this->position = position;
+    }
 };
 
 #endif
