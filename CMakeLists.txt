@@ -23,6 +23,6 @@ file(GLOB_RECURSE sources CONFIGURE_DEPENDS src-mine/*.cpp src-mine/*.h)
 target_sources(main-mine PUBLIC ${sources})
 
 # with eigen
-include_directories(~/miniconda3/envs/hdfr-stable/include/eigen3)
+include_directories(~/.conda/envs/hdfr-stable/include/eigen3)
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src-eigen/*.cpp src-eigen/*.h)
 add_executable(main-eigen ${sources})
