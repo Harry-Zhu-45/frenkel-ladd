@@ -17,8 +17,12 @@ if (WIN32)
     add_definitions(-DNOMINMAX -D_USE_MATH_DEFINES)
 endif()
 
-
 # My Box
 include_directories(~/.conda/envs/hoomd4-stable/include/eigen3)
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/MyBox.cpp)
 add_executable(main-MyBox ${sources})
+
+# Original Box
+include_directories(~/.conda/envs/hoomd4-stable/include/eigen3)
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/OriginalBox.cpp)
+add_executable(main-OriginalBox ${sources})
