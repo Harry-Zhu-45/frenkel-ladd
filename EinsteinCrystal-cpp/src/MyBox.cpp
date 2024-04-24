@@ -5,6 +5,8 @@
 
 int main(int argc, char *argv[])
 {
+    srand((unsigned int)time(0)); // 设置随机数种子
+
     /* 箱子类型 */
     std::string boxtype;
     // fcc xyz
@@ -13,36 +15,33 @@ int main(int argc, char *argv[])
     int nz = 0;
     // fcc cubic
     int replicate = 0;
-    double Lx = 0;
-    double Ly = 0;
-    double Lz = 0;
     /* 箱子类型 */
 
     // 粒子直径
     const double sigma = 1.0;
 
     // 相对密度 rho / rho0
-    const double relativeDensity = 0.7360;
+    // const double relativeDensity = 1.0;    // 最密堆积
+    const double relativeDensity = 0.7360; // 相对密度 1
+    // const double relativeDensity = 0.7778; // 相对密度 2
+
     // 晶格常数
     const double latticeConstant = sqrt(2.0) * sigma / pow(relativeDensity, 1.0 / 3.0);
 
     // 温度：k_B T = 1.0
     const double temperature = 1.0;
 
-    int numSteps = 1000000;   // 模拟步数
-    int sample_period = 1000; // 采样周期
+    int numSteps = 100000;  // 模拟步数
+    int sample_period = 50; // 采样周期
 
     double lambda; // 弹簧系数
 
     // 命令行参数解析
     int opt;
-    while ((opt = getopt(argc, argv, "n:l:b:x:y:z:r:")) != -1)
+    while ((opt = getopt(argc, argv, "l:b:x:y:z:r:")) != -1)
     {
         switch (opt)
         {
-        // case 'n':
-        //     numSteps = std::stoi(optarg); // Parse the number of steps
-        //     break;
         case 'l':
             lambda = std::stod(optarg); // Parse the lambda value
             break;
@@ -68,13 +67,31 @@ int main(int argc, char *argv[])
     }
 
     // 粒子数
-    const int numParticles = (boxtype == "xyz") ? nx * ny * nz : 4 * replicate * replicate * replicate;
+    const int numParticles = (boxtype == "cubic") ? 4 * replicate * replicate * replicate : nx * ny * nz;
 
     Eigen::Matrix<double, Eigen::Dynamic, 3> particles = Eigen::MatrixXd::Zero(numParticles, 3); // 初始化粒子位置
     Eigen::Matrix<double, Eigen::Dynamic, 3> lattice = Eigen::MatrixXd::Zero(numParticles, 3);   // 初始化晶格位置
 
+    Eigen::RowVector3d axis_1 = Eigen::RowVector3d(0, 0, 0); // 初始化晶格轴
+    Eigen::RowVector3d axis_2 = Eigen::RowVector3d(0, 0, 0); // 初始化晶格轴
+    Eigen::RowVector3d axis_3 = Eigen::RowVector3d(0, 0, 0); // 初始化晶格轴
+
+    Eigen::RowVector3d v1 = Eigen::RowVector3d(0, 0, 0); // 初始化晶格向量
+    Eigen::RowVector3d v2 = Eigen::RowVector3d(0, 0, 0); // 初始化晶格向量
+    Eigen::RowVector3d v3 = Eigen::RowVector3d(0, 0, 0); // 初始化晶格向量
+
+    // 初始化盒子长度
+    double Lx = 0;
+    double Ly = 0;
+    double Lz = 0;
+    double xy = 0;
+    double xz = 0;
+    double yz = 0;
+    double a2x = 0;
+    double a3x = 0;
+
     // 初始化模拟
-    if (boxtype == "xyz")
+    if (boxtype == "ABC")
     {
         if (nx * ny * nz == 0)
         {
@@ -107,6 +124,39 @@ int main(int argc, char *argv[])
         }
     }
 
+    // else if (boxtype == "AB")
+    // {
+    //     if (nx * ny * nz == 0)
+    //     {
+    //         std::cerr << "Usage: " << argv[0] << " [-l lambda] [-b boxtype] [-nx nx] [-ny ny] [-nz nz]" << std::endl;
+    //         std::exit(1);
+    //     }
+
+    //     const double a0 = latticeConstant / sqrt(2.0);
+    //     const double a1 = latticeConstant / 2.0;
+
+    //     Lx = nx * a0;
+    //     Ly = ny * a0;
+    //     Lz = nz * a1;
+
+    //     for (int iz = 0; iz < nz; ++iz)
+    //     {
+    //         for (int iy = 0; iy < ny; ++iy)
+    //         {
+    //             for (int ix = 0; ix < nx; ++ix)
+    //             {
+    //                 lattice.row(iz * nx * ny + iy * nx + ix) << a0 * ix + (a0 / 2.0) * fmod(iz, 2),
+    //                     a0 * iy + (a0 / 2.0) * fmod(iz, 2),
+    //                     a1 * iz;
+
+    //                 particles.row(iz * nx * ny + iy * nx + ix) << a0 * ix + (a0 / 2.0) * fmod(iz, 2),
+    //                     a0 * iy + (a0 / 2.0) * fmod(iz, 2),
+    //                     a1 * iz;
+    //             }
+    //         }
+    //     }
+    // }
+
     else if (boxtype == "cubic")
     {
         if (replicate == 0)
@@ -117,9 +167,9 @@ int main(int argc, char *argv[])
 
         double a = latticeConstant;
 
-        Lx = replicate * a;
-        Ly = replicate * a;
-        Lz = replicate * a;
+        axis_1 = Eigen::RowVector3d(1, 0, 0) * a;
+        axis_2 = Eigen::RowVector3d(0, 1, 0) * a;
+        axis_3 = Eigen::RowVector3d(0, 0, 1) * a;
 
         int i = 0; // 一开始没有粒子
         for (int iz = 0; iz < replicate; ++iz)
@@ -140,6 +190,20 @@ int main(int argc, char *argv[])
                 }
             }
         }
+
+        // 计算盒子的形状
+        v1 = replicate * axis_1;
+        v2 = replicate * axis_2;
+        v3 = replicate * axis_3;
+
+        Lx = v1.norm();
+        a2x = v1.dot(v2) / Lx;
+        Ly = sqrt(v2.squaredNorm() - a2x * a2x);
+        xy = a2x / Ly;
+        Lz = v3.dot(v1.cross(v2)) / v1.cross(v2).norm();
+        a3x = v1.dot(v3) / v1.norm();
+        xz = a3x / Lz;
+        yz = (v2.dot(v3) - a2x * a3x) / (Ly * Lz);
     }
 
     else
@@ -149,7 +213,7 @@ int main(int argc, char *argv[])
     }
 
     // 质心初始位于原点
-    Eigen::Matrix<double, 1, 3> centerOfMass = Eigen::Matrix<double, 1, 3>::Zero(1, 3);
+    Eigen::RowVector3d centerOfMass = Eigen::RowVector3d::Zero(1, 3);
     for (int i = 0; i < numParticles; ++i)
     {
         centerOfMass += particles.row(i);
@@ -178,19 +242,21 @@ int main(int argc, char *argv[])
     double MSD = 0; // 均方位移
     for (int step = 0; step < numSteps; ++step)
     {
-        Eigen::RowVector3d randomDouble = Eigen::RowVector3d::Random(1, numParticles);
-        randomDouble = (randomDouble.array() + 1.0) / 2.0; // 一次性生成 numParticles 个属于 [0,1) 的均匀分布随机数
+        // 一次性生成 numParticles 个属于 [0,1) 的均匀分布随机数
+        Eigen::MatrixXd randomDouble = Eigen::MatrixXd::Random(1, numParticles);
+        randomDouble += Eigen::MatrixXd::Ones(1, numParticles);
+        randomDouble /= 2.0;
 
         for (int selected = 0; selected < numParticles; ++selected)
         {
             // 产生 [-del, del] 之间的随机位移
             Eigen::Matrix<double, 1, 3> displacement = Eigen::Matrix<double, 1, 3>::Random(1, 3);
-            double del = 0.06;
+            double del = 0.05;
             displacement = displacement * del;
 
             // 先判断 Metroplois 准则，再判断是否接受位移
             // deltaEnergy = lambda (2 delta r_i dot delta_i + (N-1)/N delta_i^2)
-            double deltaEnergy = lambda * 2 * (particles.row(selected) - lattice.row(selected)).dot(displacement) + lambda * (1.0 - 1.0 / numParticles) * displacement.dot(displacement);
+            double deltaEnergy = lambda * 2 * (particles.row(selected) - lattice.row(selected)).dot(displacement) + lambda * (1.0 - 1.0 / numParticles) * displacement.squaredNorm();
 
             if (randomDouble(selected) < exp(-deltaEnergy / temperature)) // Metroplois 准则
             {
@@ -253,9 +319,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        // 输出每一步的均方位移
-        double msd = (particles - lattice).squaredNorm() / numParticles; // 当前step的均方位移
-        std::cout << msd << std::endl;
+        // std::cout << (particles - lattice).squaredNorm() / numParticles << std::endl; // 输出每一步的均方位移
 
         if ((step + 1) % sample_period == 0) // sample
         {
@@ -269,14 +333,14 @@ int main(int argc, char *argv[])
             // fout << "eof" << std::endl;
             // /* sample MC 模拟过程中的粒子位置 */
 
-            if (step >= numSteps / 2)
+            if (step >= 25000)
             {
-                MSD += msd;
+                MSD += (particles - lattice).squaredNorm() / numParticles;
             }
         }
     }
 
-    MSD = MSD / (numSteps / 2 / sample_period);
+    MSD /= (numSteps - 25000) / sample_period;
 
     // /* 末尾粒子位置 */
     // fout << "box " << Lx << " " << Ly << " " << Lz << std::endl;
@@ -290,16 +354,17 @@ int main(int argc, char *argv[])
 
     // fout.close(); // 关闭文件
 
+    /* 输出 */
     // 输出箱子类型
-    if (boxtype == "xyz")
-    {
-        std::cout << "boxtype: " << boxtype << std::endl;
-        std::cout << "nx: " << nx << " ny: " << ny << " nz: " << nz << std::endl;
-    }
-    else if (boxtype == "cubic")
+    if (boxtype == "cubic")
     {
         std::cout << "boxtype: " << boxtype << std::endl;
         std::cout << "replicate: " << replicate << std::endl;
+    }
+    else
+    {
+        std::cout << "boxtype: " << boxtype << std::endl;
+        std::cout << "nx: " << nx << " ny: " << ny << " nz: " << nz << std::endl;
     }
     std::cout << "numSteps: " << numSteps << std::endl; // 输出模拟步数
     std::cout << "lambda: " << lambda << std::endl;     // 输出弹簧系数
