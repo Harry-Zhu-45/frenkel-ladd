@@ -19,6 +19,10 @@
 
 运行该软件包需要 up-to-date 的 `java` 运行时环境 (JRE)：
 
+windows 可以双击运行
+
+linux 可以通过命令行运行
+
 ```bash
 java -Xmx4096m -jar injavis.jar
 ```
